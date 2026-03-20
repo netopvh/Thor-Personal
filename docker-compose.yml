@@ -1,24 +1,45 @@
+# Fluxo: Usuário -> Traefik -> thor (Vite) -> thor-api (proxy /api)
+# thor e thor-api na thor-network: thor-api resolve via DNS Docker
 services:
   thor:
     build:
       context: .
       dockerfile: Dockerfile
-    networks:
-      - traefik_proxy
+    container_name: thor-app
+    tty: true
+    stdin_open: true
+    environment:
+      - DOCKER=true
+    env_file:
+      - .env
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.thor.rule=Host(`thorpersonal.com.br`)"
       - "traefik.http.routers.thor.entrypoints=websecure"
       - "traefik.http.routers.thor.tls=true"
       - "traefik.http.routers.thor.tls.certresolver=letsencrypt"
-      - "traefik.http.services.thor.loadbalancer.server.port=5173"      
-    restart: unless-stopped
+      - "traefik.http.services.thor.loadbalancer.server.port=5173"
+    networks:
+      - thor-network
+      - traefik_proxy
+    depends_on:
+      - thor-api
+
+  thor-api:
+    build:
+      context: ./email-api
+      dockerfile: Dockerfile
+    container_name: thor-api
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3001
     env_file:
       - .env
-
-
+    networks:
+      - thor-network
 
 networks:
+  thor-network:
+    driver: bridge
   traefik_proxy:
     external: true
-

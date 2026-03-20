@@ -4,11 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx server/index.ts",
-    "dev:vite-only": "vite",
+    "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "server": "tsx server/index.ts",
     "preview": "vite preview"
   },
   "dependencies": {

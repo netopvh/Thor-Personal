@@ -1,17 +1,35 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sendContactEmail } from '../src/services/email';
-import type { SendContactEmailPayload } from '../src/services/email';
+import 'dotenv/config';
+import cors from 'cors';
+import express from 'express';
+import { sendContactEmail } from './email/index.js';
+
+type ContactPayload = {
+  nome?: unknown;
+  email?: unknown;
+  telefone?: unknown;
+  mensagem?: unknown;
+};
+
+const app = express();
+
+app.use(cors({ origin: true }));
+app.use(express.json({ limit: '1mb' }));
 
 function validateEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-function validatePayload(payload: unknown): SendContactEmailPayload {
+function validatePayload(payload: unknown): {
+  nome: string;
+  email: string;
+  telefone: string;
+  mensagem: string;
+} {
   if (!payload || typeof payload !== 'object') {
     throw new Error('Invalid payload');
   }
 
-  const { nome, email, telefone, mensagem } = payload as Record<string, unknown>;
+  const { nome, email, telefone, mensagem } = payload as ContactPayload;
 
   if (typeof nome !== 'string' || nome.trim().length < 2) throw new Error('Invalid nome');
   if (typeof email !== 'string' || !validateEmail(email)) throw new Error('Invalid email');
@@ -26,22 +44,9 @@ function validatePayload(payload: unknown): SendContactEmailPayload {
   };
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ ok: false, error: 'Method not allowed' });
-  }
-
+app.post('/api/contact', async (req, res) => {
   try {
-    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const payload = validatePayload(body);
+    const payload = validatePayload(req.body);
     await sendContactEmail(payload);
     return res.status(200).json({ ok: true });
   } catch (err) {
@@ -49,4 +54,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const isValidationError = message.startsWith('Invalid ');
     return res.status(isValidationError ? 400 : 500).json({ ok: false, error: message });
   }
-}
+});
+
+app.get('/health', (_req, res) => {
+  res.json({ ok: true });
+});
+
+const port = Number(process.env.PORT || 3001);
+const host = process.env.HOST || '0.0.0.0';
+
+app.listen(port, host, () => {
+  console.log(`[email-api] Listening on ${host}:${port}`);
+});
