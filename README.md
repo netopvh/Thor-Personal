@@ -73,6 +73,10 @@ pnpm build
 NODE_ENV=production pnpm server
 ```
 
+### Deploy na Vercel
+
+O projeto está configurado para Vercel. Após o deploy, configure as variáveis de ambiente no dashboard (Settings > Environment Variables): `EMAIL_PROVIDER`, `EMAIL_FROM_NAME`, `EMAIL_FROM_EMAIL`, `EMAIL_CONTACT_RECIPIENT` e as variáveis do provedor escolhido (SMTP ou Mailgun).
+
 You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
 ```js

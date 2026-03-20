@@ -5,7 +5,7 @@ import { inspectAttr } from 'kimi-plugin-inspect-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: './',
+  base: process.env.VERCEL ? '/' : './',
   plugins: [inspectAttr(), react()],
   server: {
     // Permite acesso pelo ngrok (host bloqueado pelo Vite por padrão)
