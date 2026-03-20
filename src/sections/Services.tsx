@@ -1,7 +1,6 @@
 import { 
   Monitor, 
   Apple, 
-  Dna, 
   User, 
   Dumbbell, 
   MessageCircle 
@@ -21,11 +20,6 @@ const services = [
     icon: Apple,
     title: 'Dieta com Nutricionista',
     description: 'Planos alimentares personalizados para seus objetivos',
-  },
-  {
-    icon: Dna,
-    title: 'Hormônios',
-    description: 'Acompanhamento hormonal especializado',
   },
   {
     icon: User,
@@ -155,17 +149,18 @@ export function Services() {
         </div>
 
         {/* Services Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="flex flex-wrap justify-center gap-6 lg:gap-8">
           {services.map((service) => {
             const Icon = service.icon;
+
             return (
               <div
                 key={service.title}
                 data-service-card
-                className={`group relative bg-gradient-to-br from-dark-gray to-black border border-gold/20 rounded-2xl p-6 sm:p-8 
+                className={`services-card group relative bg-gradient-to-br from-dark-gray to-black border border-gold/20 rounded-2xl p-6 sm:p-8 
                   hover:border-gold/50 hover:shadow-gold transition-all duration-500 
                   hover:-translate-y-2 hover:scale-[1.02]
-                  opacity-0 translate-y-12`}
+                  opacity-0 translate-y-12 w-full sm:w-1/2 lg:basis-[calc((100%-64px)/3)] lg:max-w-[calc((100%-64px)/3)] flex-none`}
               >
                 {/* Icon */}
                 <div className="mb-6 relative">

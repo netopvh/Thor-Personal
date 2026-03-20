@@ -15,5 +15,5 @@ COPY . .
 EXPOSE 5173
 
 # Acessível para o Traefik (fora do container)
-CMD ["pnpm", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
+CMD ["pnpm", "server"]
 

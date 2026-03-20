@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
+import { formatPhone } from '@/utils/phoneMask';
 
 export function Contact() {
   const { ref, isVisible } = useScrollAnimation<HTMLElement>({ threshold: 0.1 });
@@ -15,29 +16,61 @@ export function Contact() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]:
+        name === 'telefone' ? formatPhone(value) : value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setIsSubmitting(false);
-    setSubmitted(true);
-    
-    // Reset after showing success
-    setTimeout(() => {
+
+    setSubmitError(null);
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const text = await res.text();
+      let data: { ok?: boolean; error?: string } = {};
+
+      if (text.trim()) {
+        try {
+          data = JSON.parse(text) as { ok?: boolean; error?: string };
+        } catch {
+          throw new Error('Falha ao enviar mensagem. Tente novamente.');
+        }
+      }
+
+      if (!res.ok || data?.ok !== true) {
+        throw new Error(data?.error || 'Falha ao enviar mensagem.');
+      }
+
+      setSubmitted(true);
+
+      // Reset after showing success
+      window.setTimeout(() => {
+        setSubmitted(false);
+        setFormData({ nome: '', email: '', telefone: '', mensagem: '' });
+      }, 3000);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Falha ao enviar mensagem. Tente novamente.';
+      setSubmitError(message);
       setSubmitted(false);
-      setFormData({ nome: '', email: '', telefone: '', mensagem: '' });
-    }, 3000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const contactInfo = [
@@ -50,8 +83,8 @@ export function Contact() {
     {
       icon: Mail,
       label: 'Email',
-      value: 'contato@thorpersonal.com',
-      href: 'mailto:contato@thorpersonal.com',
+      value: 'thorpersonaloficial@gmail.com',
+      href: 'mailto:thorpersonaloficial@gmail.com',
     },
     {
       icon: MapPin,
@@ -225,6 +258,7 @@ export function Contact() {
                     name="telefone"
                     type="tel"
                     required
+                    maxLength={15}
                     value={formData.telefone}
                     onChange={handleChange}
                     placeholder="(51) 99999-9999"
@@ -273,6 +307,12 @@ export function Contact() {
                     </span>
                   )}
                 </Button>
+
+                {submitError && (
+                  <p className="text-red-400 text-sm text-center" role="alert">
+                    {submitError}
+                  </p>
+                )}
               </div>
             </form>
           </div>

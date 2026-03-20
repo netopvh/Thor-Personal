@@ -13,6 +13,10 @@ services:
       - "traefik.http.routers.thor.tls.certresolver=letsencrypt"
       - "traefik.http.services.thor.loadbalancer.server.port=5173"      
     restart: unless-stopped
+    env_file:
+      - .env
+
+
 
 networks:
   traefik_proxy:

@@ -43,6 +43,36 @@ export default defineConfig([
 ])
 ```
 
+## Envio de e-mails (formulário de contato)
+
+O formulário de contato em `src/sections/Contact.tsx` envia uma requisição `POST` para `POST /api/contact`. O envio pode ser feito por **SMTP** ou **API Mailgun**, configurado via `EMAIL_PROVIDER`.
+
+### Variáveis de ambiente
+
+Copie `.env.example` para `.env` e configure:
+
+- `EMAIL_PROVIDER` — `smtp` ou `mailgun`
+- `EMAIL_FROM_NAME`, `EMAIL_FROM_EMAIL`, `EMAIL_CONTACT_RECIPIENT` — compartilhadas
+
+Para **SMTP**: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_SECURE` (opcional)
+
+Para **Mailgun**: `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_EU` (opcional, para região EU)
+
+### Como executar
+
+Em desenvolvimento (SPA + API com HMR):
+
+```bash
+pnpm dev
+```
+
+Em produção (após build):
+
+```bash
+pnpm build
+NODE_ENV=production pnpm server
+```
+
 You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
 ```js

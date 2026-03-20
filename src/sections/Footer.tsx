@@ -124,7 +124,7 @@ export function Footer() {
             <h4 className="text-white font-semibold mb-4">Contato</h4>
             <div className="text-gray-500 text-sm mb-4">
               <p>WhatsApp: +55 51 98620-5200</p>
-              <p>Email: contato@thorpersonal.com</p>
+              <p>Email: thorpersonaloficial@gmail.com</p>
             </div>
             
             <div className="flex gap-3">
