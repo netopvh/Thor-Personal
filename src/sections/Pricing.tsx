@@ -1,6 +1,9 @@
 import { Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useScrollAnimation } from '@/hooks/useScrollAnimation';
+import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 
 const plans = [
   {
@@ -51,7 +54,115 @@ const plans = [
 ];
 
 export function Pricing() {
-  const { ref, isVisible } = useScrollAnimation<HTMLElement>({ threshold: 0.1 });
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
+
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+    gsap.registerPlugin(ScrollTrigger);
+
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const title = section.querySelector<HTMLElement>('[data-pricing-title]');
+    const subtitle = section.querySelector<HTMLElement>('[data-pricing-subtitle]');
+    const cards = gsap.utils.toArray<HTMLElement>(section.querySelectorAll('[data-plan-card]'));
+    const badges = gsap.utils.toArray<HTMLElement>(section.querySelectorAll('[data-plan-badge]'));
+    const features = gsap.utils.toArray<HTMLElement>(section.querySelectorAll('[data-plan-feature]'));
+    const footnote = section.querySelector<HTMLElement>('[data-pricing-footnote]');
+
+    const ctx = gsap.context(() => {
+      if (title) {
+        gsap.fromTo(
+          title,
+          { opacity: 0, y: 24 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.9,
+            ease: 'power3.out',
+            scrollTrigger: { trigger: section, start: 'top 85%', end: 'bottom 55%', toggleActions: 'play none none reverse' },
+          }
+        );
+      }
+
+      if (subtitle) {
+        gsap.fromTo(
+          subtitle,
+          { opacity: 0, y: 18 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.75,
+            ease: 'power3.out',
+            scrollTrigger: { trigger: section, start: 'top 85%', end: 'bottom 55%', toggleActions: 'play none none reverse' },
+          }
+        );
+      }
+
+      if (cards.length) {
+        gsap.fromTo(
+          cards,
+          { opacity: 0, y: 50, rotateX: 12 },
+          {
+            opacity: 1,
+            y: 0,
+            rotateX: 0,
+            duration: 0.95,
+            ease: 'power3.out',
+            stagger: 0.08,
+            scrollTrigger: { trigger: section, start: 'top 82%', end: 'bottom 40%', toggleActions: 'play none none reverse' },
+          }
+        );
+      }
+
+      if (badges.length) {
+        gsap.fromTo(
+          badges,
+          { opacity: 0, scale: 0.7 },
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 0.6,
+            ease: 'power3.out',
+            stagger: 0.08,
+            scrollTrigger: { trigger: section, start: 'top 82%', toggleActions: 'play none none reverse' },
+          }
+        );
+      }
+
+      if (features.length) {
+        gsap.fromTo(
+          features,
+          { opacity: 0, x: -16 },
+          {
+            opacity: 1,
+            x: 0,
+            duration: 0.65,
+            ease: 'power3.out',
+            stagger: 0.03,
+            scrollTrigger: { trigger: section, start: 'top 80%', end: 'bottom 35%', toggleActions: 'play none none reverse' },
+          }
+        );
+      }
+
+      if (footnote) {
+        gsap.fromTo(
+          footnote,
+          { opacity: 0, y: 18 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.7,
+            ease: 'power3.out',
+            scrollTrigger: { trigger: section, start: 'top 78%', toggleActions: 'play none none reverse' },
+          }
+        );
+      }
+    }, section);
+
+    return () => ctx.revert();
+  }, [prefersReducedMotion]);
 
   const handlePlanClick = (planName: string) => {
     const phoneNumber = '+5551986205200';
@@ -63,7 +174,7 @@ export function Pricing() {
   return (
     <section 
       id="planos"
-      ref={ref}
+      ref={sectionRef}
       className="relative py-24 sm:py-32 overflow-hidden"
     >
       {/* Background */}
@@ -85,18 +196,14 @@ export function Pricing() {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 
-            className={`font-display text-4xl sm:text-5xl md:text-6xl text-white mb-4 transition-all duration-700 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-            }`}
-            style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
+            data-pricing-title
+            className="font-display text-4xl sm:text-5xl md:text-6xl text-white mb-4 opacity-0 translate-y-8"
           >
             CONSULTORIA <span className="text-gradient-gold">ONLINE</span>
           </h2>
           <p 
-            className={`text-gray-400 text-lg max-w-2xl mx-auto transition-all duration-700 delay-200 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-            }`}
-            style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
+            data-pricing-subtitle
+            className="text-gray-400 text-lg max-w-2xl mx-auto opacity-0 translate-y-8"
           >
             Escolha o plano ideal para sua transformação
           </p>
@@ -104,7 +211,7 @@ export function Pricing() {
 
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
-          {plans.map((plan, index) => (
+          {plans.map((plan) => (
             <div
               key={plan.name}
               className={`relative group ${plan.popular ? 'md:-mt-4 md:mb-4' : ''}`}
@@ -112,10 +219,8 @@ export function Pricing() {
               {/* Popular Badge */}
               {plan.popular && (
                 <div 
-                  className={`absolute -top-4 left-1/2 -translate-x-1/2 z-20 transition-all duration-500 ${
-                    isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-                  }`}
-                  style={{ transitionDelay: '600ms' }}
+                  data-plan-badge
+                  className="absolute -top-4 left-1/2 -translate-x-1/2 z-20 opacity-0 scale-75"
                 >
                   <div className="flex items-center gap-1 bg-gold text-black px-4 py-1 rounded-full text-sm font-semibold shadow-gold">
                     <Sparkles className="w-4 h-4" />
@@ -126,18 +231,13 @@ export function Pricing() {
 
               {/* Card */}
               <div
-                className={`relative h-full bg-gradient-to-br from-dark-gray to-black border rounded-2xl p-6 sm:p-8 
-                  transition-all duration-700
-                  ${plan.popular 
-                    ? 'border-gold shadow-gold-lg hover:shadow-gold-intense' 
+                data-plan-card
+                className={`relative h-full bg-gradient-to-br from-dark-gray to-black border rounded-2xl p-6 sm:p-8
+                  ${plan.popular
+                    ? 'border-gold shadow-gold-lg hover:shadow-gold-intense'
                     : 'border-gold/20 hover:border-gold/50 hover:shadow-gold'
                   }
-                  hover:-translate-y-2
-                  ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
-                style={{ 
-                  transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
-                  transitionDelay: isVisible ? `${300 + index * 150}ms` : '0ms'
-                }}
+                  hover:-translate-y-2 opacity-0 translate-y-12`}
               >
                 {/* Plan Name */}
                 <h3 className="font-display text-2xl text-white mb-4 text-center">
@@ -166,15 +266,11 @@ export function Pricing() {
 
                 {/* Features */}
                 <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature, featureIndex) => (
+                  {plan.features.map((feature) => (
                     <li 
                       key={feature}
-                      className={`flex items-center gap-3 text-gray-300 transition-all duration-500 ${
-                        isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
-                      }`}
-                      style={{ 
-                        transitionDelay: isVisible ? `${500 + index * 150 + featureIndex * 80}ms` : '0ms'
-                      }}
+                      data-plan-feature
+                      className="flex items-center gap-3 text-gray-300 opacity-0 -translate-x-4"
                     >
                       <Check className="w-5 h-5 text-gold flex-shrink-0" />
                       <span className="text-sm">{feature}</span>
@@ -207,10 +303,8 @@ export function Pricing() {
 
         {/* Additional Info */}
         <p 
-          className={`text-center text-gray-500 text-sm mt-12 transition-all duration-700 ${
-            isVisible ? 'opacity-100' : 'opacity-0'
-          }`}
-          style={{ transitionDelay: '1000ms' }}
+          data-pricing-footnote
+          className="text-center text-gray-500 text-sm mt-12 opacity-0"
         >
           Todos os planos incluem acesso completo à plataforma e suporte dedicado
         </p>

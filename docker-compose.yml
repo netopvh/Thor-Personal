@@ -1,0 +1,23 @@
+services:
+  thor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    expose:
+      - "5173"
+    networks:
+      - proxy_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy_network"
+      - "traefik.http.services.thor.loadbalancer.server.port=5173"
+      - "traefik.http.routers.thor.rule=Host(`thorpersonal.com.br`)"
+      - "traefik.http.routers.thor.entrypoints=websecure"
+      - "traefik.http.routers.thor.tls=true"
+      - "traefik.http.routers.thor.tls.certresolver=myresolver"
+    restart: unless-stopped
+
+networks:
+  proxy_network:
+    external: true
+

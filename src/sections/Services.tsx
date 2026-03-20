@@ -6,7 +6,10 @@ import {
   Dumbbell, 
   MessageCircle 
 } from 'lucide-react';
-import { useScrollAnimation } from '@/hooks/useScrollAnimation';
+import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 
 const services = [
   {
@@ -42,12 +45,89 @@ const services = [
 ];
 
 export function Services() {
-  const { ref, isVisible } = useScrollAnimation<HTMLElement>({ threshold: 0.1 });
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
+
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+    gsap.registerPlugin(ScrollTrigger);
+
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const cards = gsap.utils.toArray<HTMLElement>(section.querySelectorAll('[data-service-card]'));
+
+    const title = section.querySelector<HTMLElement>('[data-services-title]');
+    const subtitle = section.querySelector<HTMLElement>('[data-services-subtitle]');
+
+    const ctx = gsap.context(() => {
+      if (title) {
+        gsap.fromTo(
+          title,
+          { opacity: 0, y: 24 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.9,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top 85%',
+              end: 'bottom 50%',
+              toggleActions: 'play none none reverse',
+            },
+          }
+        );
+      }
+
+      if (subtitle) {
+        gsap.fromTo(
+          subtitle,
+          { opacity: 0, y: 18 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.75,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top 85%',
+              end: 'bottom 50%',
+              toggleActions: 'play none none reverse',
+            },
+          }
+        );
+      }
+
+      if (cards.length) {
+        gsap.fromTo(
+          cards,
+          { opacity: 0, y: 44, rotateX: 12 },
+          {
+            opacity: 1,
+            y: 0,
+            rotateX: 0,
+            duration: 0.9,
+            ease: 'power3.out',
+            stagger: 0.08,
+            scrollTrigger: {
+              trigger: section,
+              start: 'top 80%',
+              end: 'bottom 40%',
+              toggleActions: 'play none none reverse',
+            },
+          }
+        );
+      }
+    }, section);
+
+    return () => ctx.revert();
+  }, [prefersReducedMotion]);
 
   return (
     <section 
       id="servicos"
-      ref={ref}
+      ref={sectionRef}
       className="relative py-24 sm:py-32 overflow-hidden"
     >
       {/* Background */}
@@ -61,18 +141,14 @@ export function Services() {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 
-            className={`font-display text-4xl sm:text-5xl md:text-6xl text-white mb-4 transition-all duration-700 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-            }`}
-            style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
+            data-services-title
+            className="font-display text-4xl sm:text-5xl md:text-6xl text-white mb-4 opacity-0 translate-y-8"
           >
             SERVIÇOS <span className="text-gradient-gold">EXCLUSIVOS</span>
           </h2>
           <p 
-            className={`text-gray-400 text-lg max-w-2xl mx-auto transition-all duration-700 delay-200 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-            }`}
-            style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
+            data-services-subtitle
+            className="text-gray-400 text-lg max-w-2xl mx-auto opacity-0 translate-y-8"
           >
             Tudo que você precisa para transformar seu corpo
           </p>
@@ -80,19 +156,16 @@ export function Services() {
 
         {/* Services Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-          {services.map((service, index) => {
+          {services.map((service) => {
             const Icon = service.icon;
             return (
               <div
                 key={service.title}
+                data-service-card
                 className={`group relative bg-gradient-to-br from-dark-gray to-black border border-gold/20 rounded-2xl p-6 sm:p-8 
                   hover:border-gold/50 hover:shadow-gold transition-all duration-500 
                   hover:-translate-y-2 hover:scale-[1.02]
-                  ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
-                style={{ 
-                  transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
-                  transitionDelay: isVisible ? `${300 + index * 100}ms` : '0ms'
-                }}
+                  opacity-0 translate-y-12`}
               >
                 {/* Icon */}
                 <div className="mb-6 relative">

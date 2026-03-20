@@ -26,7 +26,7 @@ const ensureInstagramEmbedScript = () => {
   const script = document.createElement('script');
   script.id = 'instagram-embed-script';
   script.async = true;
-  script.src = '//www.instagram.com/embed.js';
+  script.src = 'https://www.instagram.com/embed.js';
   document.body.appendChild(script);
 };
 
@@ -35,6 +35,8 @@ export function InstagramReels() {
   const processedRef = useRef(false);
 
   useEffect(() => {
+    if (!isVisible) return;
+
     ensureInstagramEmbedScript();
 
     const mq = window.matchMedia('(max-width: 767px)');
@@ -57,34 +59,34 @@ export function InstagramReels() {
       }
     };
 
-    // embed.js carrega assíncrono; no carrossel, tentamos algumas vezes
-    // até o instgrm Embeds processar.
+    // embed.js é assíncrono; em carrosséis, o DOM pode ficar pronto em tempos diferentes.
+    // Vamos chamar process() e esperar até os iframes realmente existirem.
     let attempts = 0;
+    const maxAttempts = 60; // ~12s
+
     const interval = window.setInterval(() => {
       attempts += 1;
+
       const process = window.instgrm?.Embeds?.process;
-      if (process && !processedRef.current) {
-        processedRef.current = true;
+      if (process) {
         process();
       }
 
-      if (attempts >= 20) {
-        window.clearInterval(interval);
-      }
-    }, 150);
-
-    // Garante que o pointer-events só é desabilitado depois do iframe existir,
-    // evitando quebras no render do embed.
-    const pointerPoll = window.setInterval(() => {
       const iframes = document.querySelectorAll<HTMLIFrameElement>(
         '.instagram-reels-embed-wrap iframe'
       );
 
       if (iframes.length > 0) {
+        processedRef.current = true;
         setIframePointerEvents();
-        window.clearInterval(pointerPoll);
+        window.clearInterval(interval);
+        return;
       }
-    }, 150);
+
+      if (attempts >= maxAttempts) {
+        window.clearInterval(interval);
+      }
+    }, 200);
 
     // Ajusta caso o usuário rotacione a tela.
     const onMqChange = () => setIframePointerEvents();
@@ -92,10 +94,9 @@ export function InstagramReels() {
 
     return () => {
       window.clearInterval(interval);
-      window.clearInterval(pointerPoll);
       mq.removeEventListener?.('change', onMqChange);
     };
-  }, []);
+  }, [isVisible]);
 
   return (
     <section

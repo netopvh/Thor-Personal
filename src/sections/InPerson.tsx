@@ -5,13 +5,6 @@ import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 export function InPerson() {
   const { ref, isVisible } = useScrollAnimation<HTMLElement>({ threshold: 0.2 });
 
-  const handleCheckAvailability = () => {
-    const phoneNumber = '+5551986205200';
-    const message = 'Olá! Gostaria de verificar a disponibilidade de agendamento para aulas presenciais.';
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-  };
-
   return (
     <section 
       id="presencial"
